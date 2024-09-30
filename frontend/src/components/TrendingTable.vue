@@ -17,6 +17,29 @@
                     </tr>
                 </template>
             </tbody>
+            <!-- <thead>
+                <tr>
+                    <th rowspan="1">年份</th>
+                    <template v-for="year in years" :key="year">
+                        <th>{{ year }}</th>
+                    </template>
+                </tr>
+
+                <template v-for="year in years" :key="year">
+                    <tr>
+                        <template v-for="(value, monthIndex) in getYearData(year)" :key="year + '-month-' + monthIndex">
+                            <th>{{ valueDisplay(value) }}</th>
+                        </template>
+                    </tr>
+                </template>
+            </thead>
+            <tbody>
+                <tr>
+                    <td rowspan="2">年份</td>
+                    <td v-for="month in months" :key="month">{{ month }}</td>
+                </tr>
+            </tbody> -->
+
         </table>
     </div>
 </template>
@@ -95,15 +118,22 @@ export default {
 <style scoped>
 .trending-table {
     margin-top: 2em;
+    
 }
 
 table {
+    /*display: flex;
+    flex-wrap: wrap;*/
+    max-width: 100vw;
     width: 100%;
     border-collapse: collapse;
 }
 
 th,
 td {
+    max-width: 100vw;
+    /*display: flex;
+    flex-wrap: wrap;*/
     border: 1px solid #ccc;
     padding: 0.5em;
     text-align: center;
