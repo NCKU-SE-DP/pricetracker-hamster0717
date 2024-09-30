@@ -82,7 +82,7 @@ export default {
     min-height: calc(100vh - 4.5em);
     height: calc(100% - 4.5em);
     box-sizing: border-box;
-    width: 100%;
+    /*max-width: 100vw;*/
 }
 
 .content {
@@ -90,19 +90,22 @@ export default {
     background-color: #fff;
     border-radius: 1em;
     padding: 2em;
-    width: 100%;
+    /*max-width: 100vw;*/
 }
 
 
 .selects {
     display: flex;
     justify-content: flex-start;
+    flex-wrap: wrap;
+    /*max-width: 100vw;*/
 }
 
 .selects>select {
     padding: .5em;
     font-size: 1.1em;
     margin-right: 1em;
+    margin-bottom: 2px;
     border-radius: .5em;
     border: 1px solid #ccc;
     outline: none;
@@ -114,5 +117,19 @@ export default {
     flex: 1 1 50%;
     box-sizing: border-box;
     padding: 1em;
+}
+@media (max-width: 768px) {
+    .wrapper{
+        padding: 0px 0px;
+    }
+    .content {
+        padding-top: 2em;
+        /*max-width: 100vw;*/
+    }
+    /*.visualize  {
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }*/
 }
 </style>
