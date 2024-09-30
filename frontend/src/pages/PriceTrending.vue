@@ -1,6 +1,9 @@
 <template>
     <div class="wrapper">
-        <h1>物價趨勢</h1>
+        <div class="title">
+            <h1>物價趨勢</h1>
+        </div>
+        
         <div class="content">
             <div class="selects">
 
@@ -16,7 +19,7 @@
             </div>
             <div v-if="selectedProduct" class="visualize">
                 <TrendingChart v-if="selectedProduct" :data="selectedProduct"></TrendingChart>
-                <TrendingTable v-if="selectedProduct" :data="selectedProduct"></TrendingTable>
+                <TrendingTable v-if="selectedProduct" :data="selectedProduct" class="trendtable"></TrendingTable>
             </div>
         </div>
     </div>
@@ -120,11 +123,20 @@ export default {
 }
 @media (max-width: 768px) {
     .wrapper{
-        padding: 0px 0px;
+        padding: 3em 1em 0em 1em;
     }
     .content {
         padding-top: 2em;
+        
         /*max-width: 100vw;*/
+    }
+    .title{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .trendtable{
+        overflow-x: auto;
     }
     /*.visualize  {
         display: flex;
