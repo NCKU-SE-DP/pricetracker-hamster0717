@@ -1,6 +1,9 @@
 <template>
     <div class="login-page">
-        <h1>使用者登入</h1>
+        <div class="title">
+            <h1>使用者登入</h1>
+        </div>
+        
         <div class="container">
             <form @submit.prevent="login">
                 <input v-model="username" type="text" placeholder="Username" required>
@@ -110,5 +113,12 @@ form > input{
 
 #login:hover{
     background-color: #46b8da;
+}
+@media (max-width: 768px) {
+    .title{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }
 </style>
