@@ -27,7 +27,7 @@ export default {
   position: sticky;
   top: 0;
 }
-.render{
-  /*margin-top: 4.5em;*/
-}
+/*.render{
+  margin-top: 4.5em;
+}*/
 </style>
