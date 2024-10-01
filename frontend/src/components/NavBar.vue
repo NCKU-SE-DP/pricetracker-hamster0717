@@ -58,10 +58,6 @@ export default {
     align-items: center;
     box-shadow: 0 0 5px #000000;
 }
-.hamburger{
-    font-size: 25px;
-    display: none;
-}
 .navbar ul {
     list-style: none;
     display: flex;
@@ -96,15 +92,10 @@ export default {
 @media (max-width: 768px) {
     .navbar li:hover{
         background-color:rgb(176, 198, 198);
-        
     }
     .navbar li{
         border-radius: 5px;
         padding: 2px;
-    }
-    .hamburger{
-        font-size: 25px;
-        display:contents;
     }
     .title{
         width: 100%;
