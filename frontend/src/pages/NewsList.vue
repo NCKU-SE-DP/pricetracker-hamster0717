@@ -131,5 +131,8 @@ export default {
         flex-wrap: wrap;
         justify-content: center;
     }
+    .content {
+        padding: 0;
+    }
 }
 </style>
