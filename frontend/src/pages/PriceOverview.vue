@@ -1,7 +1,10 @@
 <template>
     <div class="wrapper">
-        <h1>各類商品物價概覽</h1>
-        <h3 v-if="!isLoading" class="subtitle">資料更新時間：{{updateTime}}</h3>
+        <div class="title">
+            <h1>各類商品物價概覽</h1>
+            <h3 v-if="!isLoading" class="subtitle">資料更新時間：{{updateTime}}</h3>
+
+        </div>
         <div class="prices">
             <CategoryPrice class="category" v-for="category in categoryList" :key="category"
                 :category="category" :isLoading="isLoading" :errorMessage="errorMessage" :priceData="getPriceData(category)"></CategoryPrice>
@@ -74,5 +77,18 @@ export default {
 .subtitle{
     font-weight: normal;
     margin-top: .5em;
+}
+@media (max-width: 768px) {
+    .wrapper{
+        padding: 0px;
+        padding-top: 2em;
+    }
+    .title{
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 }
 </style>

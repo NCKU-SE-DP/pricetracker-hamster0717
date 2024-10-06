@@ -1,6 +1,8 @@
 <template>
     <div class="wrapper">
-        <h1>相關新聞</h1>
+        <div class="title">
+            <h1>相關新聞</h1>
+        </div>
         <div class="search-bar">
             <input v-model="prompt" placeholder="輸入你的搜尋prompt，讓AI幫你找相關的新聞吧！例如：「我想獲取雞蛋價格的資訊」" class="search-input"/>
             <i class="bi bi-search" @click="searchNewsBasedOnPrompt"></i>
@@ -119,5 +121,18 @@ export default {
 
 .search-bar button:hover{
     cursor: pointer;
+}
+@media (max-width: 768px) {
+    .wrapper{
+        padding: 2em 1em 0em 1em ;
+    }
+    .title{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .content {
+        padding: 0;
+    }
 }
 </style>

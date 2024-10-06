@@ -24,10 +24,10 @@ export default {
 }
 .navbar{
   z-index: 1000;
-  position: fixed;
+  position: sticky;
   top: 0;
 }
-.render{
+/*.render{
   margin-top: 4.5em;
-}
+}*/
 </style>
