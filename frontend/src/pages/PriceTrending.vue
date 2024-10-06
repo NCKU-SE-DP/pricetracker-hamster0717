@@ -12,7 +12,7 @@
                     <option v-for="category in categoryKeys" :key="category" :value="category">{{
                         categoryName(category)}}</option>
                 </select>
-                <select v-model="selectedProduct">
+                <select v-model="selectedProduct" style="margin-top: 5px;">
                     <option disabled value="">請選擇商品</option>
                     <option v-for="product in products" :key="product.產品名稱" :value="product">{{ product.產品名稱 }}</option>
                 </select>
