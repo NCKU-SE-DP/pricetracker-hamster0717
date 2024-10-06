@@ -86,8 +86,9 @@ export default {
     .title{
         display: flex;
         flex-wrap: wrap;
+        flex-direction: column;
         justify-content: center;
-        ;
+        align-items: center;
     }
 }
 </style>

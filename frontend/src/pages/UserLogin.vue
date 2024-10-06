@@ -95,6 +95,7 @@ form > input{
 #register{
     background-color: #F3F3F3;
     border: 1px solid #ccc;
+    white-space: nowrap;
 }
 
 #register > a{
@@ -109,6 +110,7 @@ form > input{
 #login{
     background-color: #5bc0de;
     color: #fff;
+    white-space: nowrap;
 }
 
 #login:hover{
