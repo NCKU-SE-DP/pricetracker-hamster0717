@@ -74,7 +74,7 @@ sentry_sdk.init(
 )
 
 app = FastAPI()
-bgs = BackgroundScheduler()
+Scheduler = BackgroundScheduler()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 app.add_middleware(
@@ -159,25 +159,25 @@ def get_new_info(search_term, is_initial=False):
     if is_initial:
         a = []
         for p in range(1, 10):
-            p2 = {
+            pageinfo = {
                 "page": p,
                 "id": f"search:{quote(search_term)}",
                 "channelId": 2,
                 "type": "searchword",
             }
-            response = requests.get("https://udn.com/api/more", params=p2)
+            response = requests.get("https://udn.com/api/more", params=pageinfo)
             a.append(response.json()["lists"])
 
         for l in a:
             all_news_data.append(l)
     else:
-        p = {
+        pageinfo = {
             "page": 1,
             "id": f"search:{quote(search_term)}",
             "channelId": 2,
             "type": "searchword",
         }
-        response = requests.get("https://udn.com/api/more", params=p)
+        response = requests.get("https://udn.com/api/more", params=pageinfo)
 
         all_news_data = response.json()["lists"]
     return all_news_data
@@ -192,7 +192,7 @@ def get_new(is_initial=False):
     news_data = get_new_info("價格", is_initial=is_initial)
     for news in news_data:
         title = news["title"]
-        m = [
+        GPTinfo = [
             {
                 "role": "system",
                 "content": "你是一個關聯度評估機器人，請評估新聞標題是否與「民生用品的價格變化」相關，並給予'high'、'medium'、'low'評價。(僅需回答'high'、'medium'、'low'三個詞之一)",
@@ -201,7 +201,7 @@ def get_new(is_initial=False):
         ]
         ai = OpenAI(api_key="xxx").chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=m,
+            messages=GPTinfo,
         )
         relevance = ai.choices[0].message.content
         if relevance == "high":
@@ -224,7 +224,7 @@ def get_new(is_initial=False):
                 "time": time,
                 "content": paragraphs,
             }
-            m = [
+            GPTinfo = [
                 {
                     "role": "system",
                     "content": "你是一個新聞摘要生成機器人，請統整新聞中提及的影響及主要原因 (影響、原因各50個字，請以json格式回答 {'影響': '...', '原因': '...'})",
@@ -234,7 +234,7 @@ def get_new(is_initial=False):
 
             completion = OpenAI(api_key="xxx").chat.completions.create(
                 model="gpt-3.5-turbo",
-                messages=m,
+                messages=GPTinfo,
             )
             result = completion.choices[0].message.content
             result = json.loads(result)
@@ -250,13 +250,13 @@ def start_scheduler():
         # should change into simple factory pattern
         get_new()
     db.close()
-    bgs.add_job(get_new, "interval", minutes=100)
-    bgs.start()
+    Scheduler.add_job(get_new, "interval", minutes=100)
+    Scheduler.start()
 
 
 @app.on_event("shutdown")
 def shutdown_scheduler():
-    bgs.shutdown()
+    Scheduler.shutdown()
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -277,10 +277,10 @@ def verify(p1, p2):
 
 
 def check_user_password_is_correct(db, n, pwd):
-    OuO = db.query(User).filter(User.username == n).first()
-    if not verify(pwd, OuO.hashed_password):
+    isPasswordCorrect = db.query(User).filter(User.username == n).first()
+    if not verify(pwd, isPasswordCorrect.hashed_password):
         return False
-    return OuO
+    return isPasswordCorrect
 
 
 def authenticate_user_token(
