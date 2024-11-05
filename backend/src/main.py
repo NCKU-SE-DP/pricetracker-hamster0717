@@ -2,15 +2,15 @@
 import sentry_sdk
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session, sessionmaker
 from fastapi import FastAPI
-from sqlalchemy.orm import  sessionmaker
 from .news.router import router as news_router
 from .users.router import router as users_router
 from .prices.router import router as prices_router
-from .database import engine
+from .database import SessionLocal
 from .news.service import (get_new_info)
 from .news.models import NewsArticle
+from .config import get_main_settings
+main_settings=get_main_settings()
 sentry_sdk.init(
     dsn="https://4001ffe917ccb261aa0e0c34026dc343@o4505702629834752.ingest.us.sentry.io/4507694792704000",
     traces_sample_rate=1.0,
@@ -20,10 +20,10 @@ sentry_sdk.init(
 app = FastAPI()
 Scheduler = BackgroundScheduler()
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-app.include_router(news_router, prefix="/api/v1")
-app.include_router(users_router, prefix="/api/v1")
-app.include_router(prices_router, prefix="/api/v1")
+
+app.include_router(news_router, prefix=main_settings.FASTAPI_PRIFIX)
+app.include_router(users_router, prefix=main_settings.FASTAPI_PRIFIX)
+app.include_router(prices_router, prefix=main_settings.FASTAPI_PRIFIX)
 
 
 app.add_middleware(

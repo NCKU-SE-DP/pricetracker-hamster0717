@@ -1,29 +1,28 @@
 from fastapi import APIRouter, Depends
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+import json
 from ..database import session_opener
 from .schemas import (PromptRequest,NewsSumaryRequestSchema)
 from ..auth.service import (
-    check_user_password_is_correct,create_access_token,pwd_context,
     authenticate_user_token,
-    
     )
 from .service import (
     get_article_upvote_details,
     fetch_news_articles_by_keyword,
-    article_id_counter
+    article_id_counter,
+    toggle_upvote
+    
 )
-from .models import NewsArticle
-from pydantic import BaseModel
 import os
+from .models import NewsArticle
 from openai import OpenAI
 from bs4 import BeautifulSoup
+import requests
 router = APIRouter(
-    tags=["News", "v1"],
+    prefix="/news",
+    tags=["News", "v1"]
 )
 
-@router.get(path='/news/news')
+@router.get(path='/news')
 def read_news(database=Depends(session_opener)):
     """
     read new
@@ -39,7 +38,8 @@ def read_news(database=Depends(session_opener)):
             {**new.__dict__, "upvotes": upvotes, "is_upvoted": upvoted}
         )
     return result
-@router.get(path='/news/user_news')
+
+@router.get(path='/user_news')
 def read_user_news(
         database=Depends(session_opener),
         user=Depends(authenticate_user_token)
@@ -67,7 +67,7 @@ def read_user_news(
 
 
 
-@router.post(path='/news/search_news')
+@router.post(path='/search_news')
 async def search_news(request: PromptRequest):
     prompt = request.prompt
     news_list = []
@@ -115,7 +115,7 @@ async def search_news(request: PromptRequest):
     return sorted(news_list, key=lambda x: x["time"], reverse=True)
 
 
-@router.post(path='/news/news_summary')
+@router.post(path='/news_summary')
 async def news_summary(
         payload: NewsSumaryRequestSchema, user=Depends(authenticate_user_token)
 ):
@@ -139,7 +139,7 @@ async def news_summary(
         response["reason"] = result["原因"]
     return response
 
-@router.post(path='/news/{id}/upvote')
+@router.post(path='/{id}/upvote')
 def upvote_article(
         id,
         database=Depends(session_opener),

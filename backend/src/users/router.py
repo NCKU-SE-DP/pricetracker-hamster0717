@@ -7,10 +7,11 @@ from .schemas import UserAuthSchema
 from ..auth.service import (check_user_password_is_correct,create_access_token,pwd_context,authenticate_user_token)
 from ..auth.models import User
 router = APIRouter(
+    prefix='/users',
     tags=["Users", "v1"],
 )
 
-@router.post(path='/users/login')
+@router.post(path='/login')
 async def login_for_access_token(
         form_data: OAuth2PasswordRequestForm = Depends(), database: Session = Depends(session_opener)
 ):
@@ -21,7 +22,7 @@ async def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.post(path='/users/register')
+@router.post(path='/register')
 def create_user(user: UserAuthSchema, database: Session = Depends(session_opener)):
     """create user"""
     hashed_password = pwd_context.hash(user.password)
@@ -31,6 +32,6 @@ def create_user(user: UserAuthSchema, database: Session = Depends(session_opener
     database.refresh(database_user)
     return database_user
 
-@router.get(path='/users/me')
+@router.get(path='/me')
 def read_users_me(user=Depends(authenticate_user_token)):
     return {"username": user.username}
