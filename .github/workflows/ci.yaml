@@ -20,7 +20,7 @@ jobs:
         run: |
           Remove-Item -Recurse -Force "${{ runner.temp }}\*"
           icacls "${{ runner.temp }}" /grant Everyone:F /T
-        shell: pwsh
+        shell: powershell
 
       - name: Checkout code
         uses: actions/checkout@v3
