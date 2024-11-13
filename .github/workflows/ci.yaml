@@ -16,13 +16,6 @@ jobs:
     runs-on: [F74134736]
 
     steps:
-      - name: Cache cleanup
-        if: always()  # 確保在任何情況下都會運行這一步
-        run: |
-          if [ -d "${{ runner.tool_cache }}" ]; then rm -rf "${{ runner.tool_cache }}/*"; fi
-          if [ -d "${{ runner.temp }}" ]; then rm -rf "${{ runner.temp }}/*"; fi
-        shell: bash
-
       - name: Checkout code
         uses: actions/checkout@v3
 
