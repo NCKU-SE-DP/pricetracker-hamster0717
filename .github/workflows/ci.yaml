@@ -6,6 +6,7 @@ on:
       - 'main'
       - 'develop'
       - 'fix/integration-test' # 新增這一行
+      - 'refactor/crawler-oop-implementation'
   pull_request:
     branches:
       - 'main'
