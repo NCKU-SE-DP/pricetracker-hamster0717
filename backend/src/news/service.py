@@ -70,6 +70,7 @@ def get_new_info(is_initial=False):
             detailed_news["summary"] = result["影響"]
             detailed_news["reason"] = result["原因"]
             
+            
             add_news_article(detailed_news)
 
 def get_article_upvote_details(article_id, uid, database):
