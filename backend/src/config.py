@@ -10,6 +10,7 @@ class MainSettings(BaseSettings):
         env_prefix = "MAIN_"
         extra = "ignore"
     FASTAPI_PRIFIX: str = Field(default='/api/v1')
+    
 
 @lru_cache
 def get_main_settings() -> MainSettings:

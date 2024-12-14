@@ -12,10 +12,12 @@ from sqlalchemy import delete, insert, select
 from sqlalchemy.orm import Session
 from src.news.config import get_NewsSettings
 from src.crawler.udn_crawler import UDNCrawler
+from src.llm_client.openai_client import OpenAIClient
+
 udn_crawler = UDNCrawler()
 NewsSettings=get_NewsSettings()
+openai_client=OpenAIClient(_api_key=NewsSettings.Openai_APIKEY)
 article_id_counter = itertools.count(start=1000000)
-openai_client = OpenAI(api_key=NewsSettings.Openai_APIKEY)
 def process_news_item(news):
     """
     Fetches detailed content from a news article.
@@ -59,36 +61,15 @@ def get_new_info(is_initial=False):
     news_data = fetch_news_articles_by_keyword("價格", is_initial=is_initial)
     for news in news_data:
         title = news["title"]
-        summary_prompt = [
-            {
-                "role": "system",
-                "content": "你是一個關聯度評估機器人，請評估新聞標題是否與「民生用品的價格變化」相關，並給予'high'、'medium'、'low'評價。(僅需回答'high'、'medium'、'low'三個詞之一)",
-            },
-            {"role": "user", "content": f"{title}"},
-        ]
-        summary_completion = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=summary_prompt,
-        )
-        relevance = summary_completion.choices[0].message.content
+        relevance = openai_client.evaluate_relevance(title, "民生用品的價格變化")
         if relevance == "high":
             detailed_news = udn_crawler.parse(news.url)
-            GPTinfo = [
-                {
-                    "role": "system",
-                    "content": "你是一個新聞摘要生成機器人，請統整新聞中提及的影響及主要原因 (影響、原因各50個字，請以json格式回答 {'影響': '...', '原因': '...'})",
-                },
-                {"role": "user", "content": " ".join(detailed_news["content"])},
-            ]
 
-            completion = openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=GPTinfo,
-            )
-            result = completion.choices[0].message.content
-            result = json.loads(result)
+            result = openai_client.generate_summary(" ".join(detailed_news["content"]))
+
             detailed_news["summary"] = result["影響"]
             detailed_news["reason"] = result["原因"]
+            
             add_news_article(detailed_news)
 
 def get_article_upvote_details(article_id, uid, database):

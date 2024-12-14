@@ -15,3 +15,4 @@ class NewsArticle(Base):
     upvoted_by_users = relationship(
         "User", secondary=user_news_association_table, back_populates="upvoted_news"
     )
+

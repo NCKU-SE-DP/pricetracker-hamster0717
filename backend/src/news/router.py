@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 import json
 from ..database import session_opener
-from .schemas import (PromptRequest,NewsSumaryRequestSchema)
+from .schemas import (PromptRequest,NewsSumaryRequestSchema,NewsSumaryCustomModelSchema)
 from ..auth.service import (
     authenticate_user_token,
     )
@@ -14,16 +14,22 @@ from .service import (
     convert_news_to_dict
     
 )
+from src.news.config import get_NewsSettings
 import os
 from .models import NewsArticle
 from openai import OpenAI
 from bs4 import BeautifulSoup
 import requests
+
 router = APIRouter(
     prefix="/news",
     tags=["News", "v1"]
 )
-
+from src.llm_client.openai_client import OpenAIClient
+from src.llm_client.anthropic_client import AnthropicClient
+NewsSettings=get_NewsSettings()
+openai_client=OpenAIClient(_api_key=NewsSettings.Openai_APIKEY)
+anthropic_client=AnthropicClient(_api_key=NewsSettings.Anthropic_APIKEY)
 @router.get(path='/news')
 def read_news(database=Depends(session_opener)):
     """
@@ -70,19 +76,8 @@ def read_user_news(
 async def search_news(request: PromptRequest):
     prompt = request.prompt
     news_list = []
-    keyword_prompt  = [
-        {
-            "role": "system",
-            "content": "你是一個關鍵字提取機器人，用戶將會輸入一段文字，表示其希望看見的新聞內容，請提取出用戶希望看見的關鍵字，請截取最重要的關鍵字即可，避免出現「新聞」、「資訊」等混淆搜尋引擎的字詞。(僅須回答關鍵字，若有多個關鍵字，請以空格分隔)",
-        },
-        {"role": "user", "content": f"{prompt}"},
-    ]
 
-    completion = OpenAI(api_key="xxx").chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=keyword_prompt ,
-    )
-    keywords = completion.choices[0].message.content
+    keywords = openai_client.extract_search_keywords(prompt)
     # should change into simple factory pattern
     news_items = fetch_news_articles_by_keyword(keywords, is_initial=False)
     for news in news_items:
@@ -105,7 +100,7 @@ async def news_summary(
             "role": "system",
             "content": "你是一個新聞摘要生成機器人，請統整新聞中提及的影響及主要原因 (影響、原因各50個字，請以json格式回答 {'影響': '...', '原因': '...'})",
         },
-        {"role": "user", "content": f"{payload.content}"},
+        {"role": user, "content": f"{payload.content}"},
     ]
 
     completion = OpenAI(api_key="xxx").chat.completions.create(
@@ -127,3 +122,22 @@ def upvote_article(
 ):
     message = toggle_upvote(id, user.id, database)
     return {"message": message}
+@router.post("/news_summary_custom_model")
+async def news_summary_with_custom_model(
+        payload: NewsSumaryCustomModelSchema, user=Depends(authenticate_user_token)
+):
+    response = {}
+
+    if not payload.ai_model:
+        return {"message": "Model is required."}
+    elif payload.ai_model.lower() == "openai":
+        result = openai_client.generate_summary(payload.content)
+    elif payload.ai_model.lower() == "anthropic" or payload.llm_model.lower() == "claude":
+        result = anthropic_client.generate_summary(payload.content)
+    else:
+        return {"message": "Invalid model."}
+
+    if result:
+        response["summary"] = result["影響"]
+        response["reason"] = result["原因"]
+    return response
