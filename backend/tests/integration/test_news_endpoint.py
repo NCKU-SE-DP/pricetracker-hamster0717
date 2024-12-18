@@ -112,8 +112,7 @@ def test_read_user_news(test_user, test_token, test_articles):
     assert json_response[1]["is_upvoted"] is False
 
 def mock_openai(mocker, return_content):
-    mock_openai_client = mocker.patch('src.news.router.OpenAI')
-
+    mock_openai_client = mocker.patch('src.news.router.OpenAI')  # Mock OpenAI client
     mock_message = Mock()
     mock_message.content = return_content
 
@@ -123,6 +122,7 @@ def mock_openai(mocker, return_content):
     mock_completion = Mock()
     mock_completion.choices = [mock_choice]
 
+    # Return mock completion when OpenAI API is called
     mock_openai_client.return_value.chat.completions.create.return_value = mock_completion
 
     return mock_openai_client
@@ -140,25 +140,27 @@ def test_search_news(mocker):
         Headline(title="Test Title", url="https://udn.com/api/more/testing/news1")
     ])
 
-    mock_get = mocker.patch("src.news.service.requests.get", return_value=mocker.Mock(
-        text="""
-        <html>
-        <h1 class="article-content__title">Test Title</h1>
-        <time class="article-content__time">2024-09-10</time>
-        <section class="article-content__editor">
-            <p>This is a test paragraph.</p>
-        </section>
-        </html>
-        """
-    ))
+    mock_get = mocker.patch(
+        "src.news.service.requests.get", 
+        return_value=mocker.Mock(
+            text="""
+            <html>
+            <h1 class="article-content__title">Test Title</h1>
+            <time class="article-content__time">2024-09-10</time>
+            <section class="article-content__editor">
+                <p>This is a test paragraph.</p>
+            </section>
+            </html>
+            """
+        )
+    )
 
-
+    # 測試 POST 請求
     request_body = {"prompt": "Test search prompt"}
-
     response = client.post("/api/v1/news/search_news", json=request_body)
-
+    print(data)
+    # 斷言
     assert response.status_code == 200
-
     data = response.json()
     assert len(data) == 1
     assert data[0]["title"] == "Test Title"
