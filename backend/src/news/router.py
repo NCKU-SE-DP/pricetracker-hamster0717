@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends,HTTPException
 import json
 from ..database import session_opener
 from .schemas import (PromptRequest,NewsSumaryRequestSchema,NewsSumaryCustomModelSchema)
@@ -14,6 +14,8 @@ from .service import (
     convert_news_to_dict
     
 )
+from ..llm_client.exceptions import EvaluationFailure
+from sentry_sdk import capture_exception
 from src.news.config import get_NewsSettings
 import os
 from .models import NewsArticle
@@ -25,6 +27,7 @@ router = APIRouter(
     prefix="/news",
     tags=["News", "v1"]
 )
+import logging
 from src.llm_client.openai_client import OpenAIClient
 from src.llm_client.anthropic_client import AnthropicClient
 NewsSettings=get_NewsSettings()
@@ -38,10 +41,21 @@ def read_news(database=Depends(session_opener)):
     :param db:
     :return:
     """
-    news = database.query(NewsArticle).order_by(NewsArticle.time.desc()).all()
+    logging.debug("Accessed /api/v1/news/news")
+    try:
+        news = database.query(NewsArticle).order_by(NewsArticle.time.desc()).all()
+    except Exception as e:
+        logging.error(f"Failed to fetch news: {e}")
+        capture_exception(e)
+        return HTTPException(status_code=400, detail="Failed to fetch news")
     result = []
     for new in news:
-        upvotes, upvoted = get_article_upvote_details(new.id, None, database)
+        try:
+            upvotes, upvoted = get_article_upvote_details(new.id, None, database)
+        except Exception as e:
+            logging.warning(f"Failed to fetch upvote details for news '{news.id}': {e}, skipping.")
+            capture_exception(e)
+            continue
         result.append(
             {**new.__dict__, "upvotes": upvotes, "is_upvoted": upvoted}
         )
@@ -59,10 +73,23 @@ def read_user_news(
     :param u:
     :return:
     """
-    news = database.query(NewsArticle).order_by(NewsArticle.time.desc()).all()
+    logging.debug(f"{user.id} accessed /api/v1/news/user_news")
+    try:
+        news = database.query(NewsArticle).order_by(NewsArticle.time.desc()).all()
+    except Exception as e:
+        logging.error(f"Failed to fetch news: {e}")
+        capture_exception(e)
+        return HTTPException(status_code=400, detail="Failed to fetch news")
+    
     result = []
     for article in news:
-        upvotes, upvoted = get_article_upvote_details(article.id, user.id, database)
+        try:
+            upvotes, upvoted = get_article_upvote_details(article.id, user.id, database)
+        except Exception as e:
+            logging.warning(f"Failed to fetch upvote details for news '{article.id}': {e}, skipping.")
+            capture_exception(e)
+            continue
+
         result.append(
             {
                 **article.__dict__,
@@ -74,21 +101,37 @@ def read_user_news(
 
 @router.post(path='/search_news')
 async def search_news(request: PromptRequest):
+    logging.debug(f"Accessed /api/v1/news/search_news: {request.prompt}")
     prompt = request.prompt
     news_list = []
 
-    keywords = openai_client.extract_search_keywords(prompt)
+    try:
+        keywords = openai_client.extract_search_keywords(prompt)
+    except EvaluationFailure as e:
+        logging.error(f"Failed to extract search keywords: {e}")
+        capture_exception(e)
+        return HTTPException(status_code=400, detail="Something went wrong while processing search keywords")
     # should change into simple factory pattern
-    news_items = fetch_news_articles_by_keyword(keywords, is_initial=False)
+
+    try:
+        news_items = fetch_news_articles_by_keyword(keywords, is_initial=False)
+    except Exception as e:
+        logging.error(f"Failed to fetch news info: {e}")
+        capture_exception(e)
+        return HTTPException(status_code=400, detail="Failed to fetch news info")
+    
+    
     for news in news_items:
         try:
             detailed_news = convert_news_to_dict(udn_crawler.parse(news.url))
-            detailed_news["id"] = next(article_id_counter)
-            news_list.append(detailed_news)
-        except Exception as error_message:
-            print(error_message)
-    return sorted(news_list, key=lambda x: x["time"], reverse=True)
+        except Exception as e:
+            logging.error(f"Failed to validate and parse news: {e}")
+            capture_exception(e)
+            continue
 
+        detailed_news["id"] = next(article_id_counter)
+        news_list.append(detailed_news)
+    return sorted(news_list, key=lambda x: x["time"], reverse=True)
 
 @router.post(path='/news_summary')
 async def news_summary(
@@ -120,7 +163,10 @@ def upvote_article(
         database=Depends(session_opener),
         user=Depends(authenticate_user_token),
 ):
+    logging.debug(f"{user.id} accessed /api/v1/news/{id}/upvote")
     message = toggle_upvote(id, user.id, database)
+    if "Failed" in message:
+        return HTTPException(status_code=400, detail=message)
     return {"message": message}
 @router.post("/news_summary_custom_model")
 async def news_summary_with_custom_model(

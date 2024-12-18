@@ -31,7 +31,7 @@ UDNCrawler Methods:
     save(self, news: News, db: Session): Saves a news article to the database.
     _commit_changes(db: Session): Commits the changes to the database with error handling.
 """
-
+import logging
 from requests import Response
 from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
@@ -40,7 +40,7 @@ from .crawler_base import NewsCrawlerBase, Headline, News, NewsWithSummary
 from urllib.parse import quote
 from src.auth.models import User
 from src.news.models import NewsArticle
-from .exceptions import DomainMismatchException
+from .exceptions import DomainMismatchException, ParseException, ExtractionException
 class UDNCrawler(NewsCrawlerBase):
     CHANNEL_ID = 2
 
@@ -102,29 +102,42 @@ class UDNCrawler(NewsCrawlerBase):
     def parse(self, url: str) -> News:
         response = self._perform_request(url)
         if not self._is_valid_url(url):
+            logging.error(f"[UDNCrawler] Domain mismatch for URL: {url}")
             raise DomainMismatchException(url)
-        return self._extract_news(BeautifulSoup(response.text, "html.parser"), url)
+        try:
+            return self._extract_news(BeautifulSoup(response.text, "html.parser"), url)
+        except Exception as e:
+            logging.error(f"[UDNCrawler] Error parsing news content: {e}")
+            raise ParseException(url)
+
+
     @staticmethod
     def _extract_news(soup: BeautifulSoup, url: str) -> News:
-        title_element = soup.find("h1", class_="article-content__title")
-        if title_element is None:
-            raise ValueError(f"Unable to find title for URL: {url}")
-        title = title_element.text
-        time=soup.find("time",class_="article-content__time").text
-        content_section = soup.find("section", class_="article-content__editor")
-        paragraphs = [
-            p.text
-            for p in content_section.find_all("p")
-            if p.text.strip() != "" and "▪" not in p.text
-        ]
-        content = " ".join(paragraphs)
+        try:
+            logging.debug(f"[UDNCrawler] Extracting news content from: {url}")
+            title_element = soup.find("h1", class_="article-content__title")
+            if title_element is None:
+                raise ValueError(f"Unable to find title for URL: {url}")
+            title = title_element.text
+            time=soup.find("time",class_="article-content__time").text
+            content_section = soup.find("section", class_="article-content__editor")
+            paragraphs = [
+                p.text
+                for p in content_section.find_all("p")
+                if p.text.strip() != "" and "▪" not in p.text
+            ]
+            content = " ".join(paragraphs)
 
-        return News(
-            title=title,
-            url=url,
-            time=time,
-            content=content
-        )
+            return News(
+                title=title,
+                url=url,
+                time=time,
+                content=content
+            )
+        except Exception as e:
+            logging.error(f"[UDNCrawler] Error extracting news content: {e}")
+            raise ExtractionException(url)
+
     def save(self, news: NewsWithSummary, db: Session):
         existing_news = db.query(NewsArticle).filter_by(url=news.url).first()
         if existing_news:

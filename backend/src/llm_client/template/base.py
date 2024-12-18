@@ -5,6 +5,7 @@ import json
 from ..base import LLMClientBase, MessageInterface, Relevance
 from ..exceptions import EvaluationFailure
 from ..config import get_ai_config
+from sentry_sdk import capture_exception
 ai_config = get_ai_config()
 class LLMClientTemplate(LLMClientBase, ABC):
     def __init__(self, _api_key: str):
@@ -26,6 +27,7 @@ class LLMClientTemplate(LLMClientBase, ABC):
                 )
                 return completion.choices[0].message.content
             except Exception as error:
+                capture_exception(error)
                 raise EvaluationFailure(f"An API error occurred: {error}")
 
     def extract_search_keywords(self, prompt: str) -> str:
@@ -52,6 +54,7 @@ class LLMClientTemplate(LLMClientBase, ABC):
         try:
             return json.loads(response)
         except json.JSONDecodeError:
+            capture_exception(json.JSONDecodeError)
             raise EvaluationFailure(f"Failed to generate a summary based on the prompt: {response}")
 
     def evaluate_relevance(self, news_title: str, prompt: str = "民生用品的價格變化") -> Optional[str]:

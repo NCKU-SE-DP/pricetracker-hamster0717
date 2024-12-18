@@ -8,6 +8,7 @@ on:
       - 'fix/integration-test' # 新增這一行
       - 'refactor/crawler-oop-implementation'
       - 'refactor/llm_client'
+      - 'refactor/error_handling'
   pull_request:
     branches:
       - 'main'

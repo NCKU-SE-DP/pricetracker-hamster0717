@@ -4,6 +4,7 @@ from urllib.parse import quote
 import requests
 from .constant import NEWS_LINK
 import os
+import logging
 from openai import OpenAI
 from bs4 import BeautifulSoup
 import itertools
@@ -13,7 +14,8 @@ from sqlalchemy.orm import Session
 from src.news.config import get_NewsSettings
 from src.crawler.udn_crawler import UDNCrawler
 from src.llm_client.openai_client import OpenAIClient
-
+from sentry_sdk import capture_exception
+from ..llm_client.exceptions import EvaluationFailure
 udn_crawler = UDNCrawler()
 NewsSettings=get_NewsSettings()
 openai_client=OpenAIClient(_api_key=NewsSettings.Openai_APIKEY)
@@ -61,7 +63,13 @@ def get_new_info(is_initial=False):
     news_data = fetch_news_articles_by_keyword("價格", is_initial=is_initial)
     for news in news_data:
         title = news["title"]
-        relevance = openai_client.evaluate_relevance(title, "民生用品的價格變化")
+
+        try:
+            relevance = openai_client.evaluate_relevance(title, "民生用品的價格變化")
+        except EvaluationFailure as e:
+            logging.error(f"Failed to evaluate relevance: {e}")
+            capture_exception(e)
+            return
         if relevance == "high":
             detailed_news = udn_crawler.parse(news.url)
 
