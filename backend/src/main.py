@@ -12,6 +12,10 @@ from .news.models import NewsArticle
 from .config import get_main_settings
 from sentry_sdk import capture_exception
 import logging
+from .logger import init_logger
+
+init_logger()
+logging.debug("Initialisation started.")
 main_settings=get_main_settings()
 sentry_sdk.init(
     dsn="https://c002ed3a235c1ad39f64f93194f1b66b@o4508490249732096.ingest.us.sentry.io/4508490254974976",

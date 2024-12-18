@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import List
 from openai import OpenAI
 from enum import Enum
-
+from .exceptions import EvaluationFailure
 class MessageInterface(BaseModel):
     """
     message for LLM
@@ -36,7 +36,7 @@ class Relevance(str, Enum):
         if response_lower in valid_values:
             return response_lower
         else:
-            raise ValueError(f"Invalid relevance evaluation value: {response}")
+            raise EvaluationFailure(f"Invalid relevance evaluation value: {response}")
 
 
         
