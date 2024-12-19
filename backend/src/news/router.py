@@ -31,8 +31,8 @@ import logging
 from src.llm_client.openai_client import OpenAIClient
 from src.llm_client.anthropic_client import AnthropicClient
 NewsSettings=get_NewsSettings()
-openai_client=OpenAIClient(_api_key=NewsSettings.OPENAI_APIKEY)
-anthropic_client=AnthropicClient(_api_key=NewsSettings.ANTHROPIC_APIKEY)
+openai_client=OpenAIClient(_api_key=NewsSettings.OPENAI_API_KEY)
+anthropic_client=AnthropicClient(_api_key=NewsSettings.ANTHROPIC_API_KEY)
 @router.get(path='/news')
 def read_news(database=Depends(session_opener)):
     """

@@ -13,6 +13,5 @@ class AuthSettings(BaseSettings):
     ACCESS_TOKEN_ALGORITHM: str = Field(default="HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=15)
 
-@lru_cache
 def get_auth_settings() -> AuthSettings:
     return AuthSettings()

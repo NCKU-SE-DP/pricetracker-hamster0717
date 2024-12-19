@@ -7,8 +7,8 @@ import os
 
 dotenv.load_dotenv()
 class NewsSettings(BaseSettings):
-    OPENAI_APIKEY: str = os.getenv("OPENAI_APIKEY", "")
-    ANTHROPIC_APIKEY: str = os.getenv("ANTHROPIC_APIKEY", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

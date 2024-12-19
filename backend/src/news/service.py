@@ -18,7 +18,7 @@ from sentry_sdk import capture_exception
 from ..llm_client.exceptions import EvaluationFailure
 udn_crawler = UDNCrawler()
 NewsSettings=get_NewsSettings()
-openai_client=OpenAIClient(_api_key=NewsSettings.OPENAI_APIKEY)
+openai_client=OpenAIClient(_api_key=NewsSettings.OPENAI_API_KEY)
 article_id_counter = itertools.count(start=1000000)
 def process_news_item(news):
     """
