@@ -8,6 +8,7 @@ class AIConfig(BaseSettings):
         env_file_encoding = "utf-8"
         env_prefix = "AI_"
         extra = "ignore"
+        
     OPENAI_ENABLED : bool = Field(True)
     
     OPEN_AI_KEY: str = Field("")
