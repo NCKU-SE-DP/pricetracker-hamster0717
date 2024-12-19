@@ -17,10 +17,7 @@ from unittest.mock import Mock
 from src.llm_client.base import MessageInterface
 
 
-import os
 
-print("OPENAI_APIKEY:", os.getenv("OPENAI_APIKEY"))
-print("ANTHROPIC_APIKEY:", os.getenv("ANTHROPIC_APIKEY"))
 
 SECRET_KEY = "1892dhianiandowqd0n"
 ALGORITHM = "HS256"
