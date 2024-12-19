@@ -12,6 +12,6 @@ class NewsSettings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-@lru_cache
+
 def get_NewsSettings() -> NewsSettings:
     return NewsSettings()
