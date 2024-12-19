@@ -28,7 +28,7 @@ jobs:
             Write-Host "OPENAI_API_KEY length: $($env:OPENAI_API_KEY.Length)"
           }
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: 123
 
       - name: Clear and Set Permissions for Temp Folder
         run: |
