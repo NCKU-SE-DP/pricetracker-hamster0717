@@ -11,7 +11,7 @@ class TestOpenAIClient(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         if RUN_REAL_API_TESTS:
-            self.client = OpenAIClient(_api_key=os.getenv("OPENAI_API_KEY"))
+            self.client = OpenAIClient(_api_key=os.getenv("AI_OPENAI_API_KEY"))
         else:
             self.client = OpenAIClient(_api_key="fake_api_key")
 

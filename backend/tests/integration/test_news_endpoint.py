@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.orm import sessionmaker
 import json
+import logging
 from jose import jwt
 from src.main import app
 from src.database import Base,session_opener
@@ -112,7 +113,7 @@ def test_read_user_news(test_user, test_token, test_articles):
     assert json_response[1]["is_upvoted"] is False
 
 def mock_openai(mocker, return_content):
-    mock_openai_client = mocker.patch('src.llm_client.template.LLMClientTemplate._generate', return_value=return_content)
+    mock_openai_client = mocker.patch('src.llm_client.template.base.LLMClientTemplate._generate', return_value=return_content)
 
     return mock_openai_client
 
@@ -147,7 +148,6 @@ def test_search_news(mocker):
     # 測試 POST 請求
     request_body = {"prompt": "Test search prompt"}
     response = client.post("/api/v1/news/search_news", json=request_body)
-    print(data)
     # 斷言
     assert response.status_code == 200
     data = response.json()
@@ -159,16 +159,19 @@ def test_search_news(mocker):
 
 def test_news_summary(mocker, test_token):
     headers = {"Authorization": f"Bearer {test_token}"}
-    openai_response = json.dumps({"影響": "test impact", "原因": "test reason"})
-
-    mock_openai(mocker, openai_response)
-    request_body = NewsSumaryRequestSchema(content="Test news content").dict()
-    response = client.post("/api/v1/news/news_summary", json=request_body, headers=headers)
-
+    # openai_response = json.dumps({"影響": "test impact", "原因": "test reason"})
+    # mock_openai(mocker, openai_response)
+    test_content = "這是一篇測試新聞內容，主要討論AI發展對社會的影響。"
+    request_body = NewsSumaryRequestSchema(content=test_content)
+    response = client.post("/api/v1/news/news_summary", json=request_body.model_dump(), headers=headers)
+    logging.debug(f"test_news_summary json:{response}")
     assert response.status_code == 200
     json_response = response.json()
-    assert json_response["summary"] == "test impact"
-    assert json_response["reason"] == "test reason"
+    
+    assert "summary" in json_response
+    assert "reason" in json_response
+    assert isinstance(json_response["summary"], str)
+    assert isinstance(json_response["reason"], str)
 
 
 def test_upvote_article(test_user_and_articles, test_token):

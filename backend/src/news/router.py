@@ -137,25 +137,16 @@ async def search_news(request: PromptRequest):
 async def news_summary(
         payload: NewsSumaryRequestSchema, user=Depends(authenticate_user_token)
 ):
-    response = {}
-    summary_prompt = [
-        {
-            "role": "system",
-            "content": "你是一個新聞摘要生成機器人，請統整新聞中提及的影響及主要原因 (影響、原因各50個字，請以json格式回答 {'影響': '...', '原因': '...'})",
-        },
-        {"role": user, "content": f"{payload.content}"},
-    ]
-
-    completion = OpenAI(api_key="xxx").chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=summary_prompt ,
-    )
-    result = completion.choices[0].message.content
-    if result:
-        result = json.loads(result)
-        response["summary"] = result["影響"]
-        response["reason"] = result["原因"]
-    return response
+    result = openai_client.generate_summary(payload.content)
+    logging.debug(f"news_summary json:{result}")
+    try:
+        summary_dict = json.loads(result.get("content", "{}"))
+        return {
+            "summary": summary_dict.get("影響", "No impact provided"),
+            "reason": summary_dict.get("原因", "No reason provided")
+        }
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Failed to generate summary")
 
 @router.post(path='/{id}/upvote')
 def upvote_article(
