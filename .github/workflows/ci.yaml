@@ -17,7 +17,9 @@ on:
 jobs:
   test:
     runs-on: [F74134736]
-
+    env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       - name: Clear and Set Permissions for Temp Folder
         run: |
