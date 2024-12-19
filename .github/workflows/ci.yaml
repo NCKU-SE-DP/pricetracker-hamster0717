@@ -18,17 +18,17 @@ jobs:
   test:
     runs-on: [F74134736]
     steps:
-      - name: Check OPENAI_APIKEY Length
+      - name: Check OPENAI_API_KEY Length
         shell: powershell
         run: |
-          if (-not $env:OPENAI_APIKEY) {
-            Write-Host "OPENAI_APIKEY is not set or is empty!"
+          if (-not $env:OPENAI_API_KEY) {
+            Write-Host "OPENAI_API_KEY is not set or is empty!"
             exit 1
           } else {
-            Write-Host "OPENAI_APIKEY length: $($env:OPENAI_APIKEY.Length)"
+            Write-Host "OPENAI_API_KEY length: $($env:OPENAI_API_KEY.Length)"
           }
         env:
-          OPENAI_APIKEY: ${{ secrets.OPENAI_APIKEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Clear and Set Permissions for Temp Folder
         run: |
