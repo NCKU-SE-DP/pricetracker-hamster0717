@@ -15,6 +15,13 @@ from src.news.schemas import NewsSumaryRequestSchema, PromptRequest,NewsSumaryCu
 from src.auth.service import pwd_context
 from unittest.mock import Mock
 from src.llm_client.base import MessageInterface
+
+
+import os
+
+print("OPENAI_APIKEY:", os.getenv("OPENAI_APIKEY"))
+print("ANTHROPIC_APIKEY:", os.getenv("ANTHROPIC_APIKEY"))
+
 SECRET_KEY = "1892dhianiandowqd0n"
 ALGORITHM = "HS256"
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -167,7 +174,7 @@ def test_news_summary(mocker, test_token):
     logging.debug(f"test_news_summary json:{response}")
     assert response.status_code == 200
     json_response = response.json()
-    
+
     assert "summary" in json_response
     assert "reason" in json_response
     assert isinstance(json_response["summary"], str)
