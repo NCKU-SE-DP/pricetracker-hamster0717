@@ -13,7 +13,7 @@ from src.crawler.crawler_base import Headline
 from src.news.schemas import NewsSumaryRequestSchema, PromptRequest,NewsSumaryCustomModelSchema
 from src.auth.service import pwd_context
 from unittest.mock import Mock
-
+from src.llm_client.base import MessageInterface
 SECRET_KEY = "1892dhianiandowqd0n"
 ALGORITHM = "HS256"
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -112,18 +112,7 @@ def test_read_user_news(test_user, test_token, test_articles):
     assert json_response[1]["is_upvoted"] is False
 
 def mock_openai(mocker, return_content):
-    mock_openai_client = mocker.patch('src.news.router.OpenAI')  # Mock OpenAI client
-    mock_message = Mock()
-    mock_message.content = return_content
-
-    mock_choice = Mock()
-    mock_choice.message = mock_message
-
-    mock_completion = Mock()
-    mock_completion.choices = [mock_choice]
-
-    # Return mock completion when OpenAI API is called
-    mock_openai_client.return_value.chat.completions.create.return_value = mock_completion
+    mock_openai_client = mocker.patch('src.llm_client.template.LLMClientTemplate._generate', return_value=return_content)
 
     return mock_openai_client
 
