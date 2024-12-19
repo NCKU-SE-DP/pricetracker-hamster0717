@@ -17,6 +17,7 @@ on:
 jobs:
   test:
     runs-on: [F74134736]
+    environment: hamster # 指定 hamster 環境
     steps:
       - name: Check OPENAI_API_KEY Length
         shell: powershell
@@ -28,7 +29,7 @@ jobs:
             Write-Host "OPENAI_API_KEY length: $($env:OPENAI_API_KEY.Length)"
           }
         env:
-          OPENAI_API_KEY: 123
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Clear and Set Permissions for Temp Folder
         run: |
