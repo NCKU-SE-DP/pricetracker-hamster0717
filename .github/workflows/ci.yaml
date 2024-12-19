@@ -18,13 +18,13 @@ jobs:
   test:
     runs-on: [F74134736]
     steps:
-      - name: Check OPENAI_APIKEY Length
+      - name: Check OPENAI_API_KEY Length
         run: |
-          if [ -z "$OPENAI_APIKEY" ]; then
-            echo "OPENAI_APIKEY is not set or is empty!"
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY is not set or is empty!"
             exit 1
           else
-            echo "OPENAI_APIKEY length: ${#OPENAI_APIKEY}"
+            echo "OPENAI_API_KEY length: ${#OPENAI_API_KEY}"
           fi
         env:
           OPENAI_APIKEY: ${{ secrets.OPENAI_APIKEY }}
