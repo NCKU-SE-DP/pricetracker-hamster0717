@@ -19,7 +19,7 @@ jobs:
     runs-on: [F74134736]
     steps:
       - name: Check OPENAI_APIKEY Length
-        shell: pwsh
+        shell: powershell
         run: |
           if (-not $env:OPENAI_APIKEY) {
             Write-Host "OPENAI_APIKEY is not set or is empty!"
