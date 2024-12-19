@@ -17,12 +17,17 @@ on:
 jobs:
   test:
     runs-on: [F74134736]
-    env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
-      - name: Debug Environment Variables
-        run: echo "OPENAI_APIKEY=${{ secrets.OPENAI_API_KEY }}"
+      - name: Check OPENAI_APIKEY Length
+        run: |
+          if [ -z "$OPENAI_APIKEY" ]; then
+            echo "OPENAI_APIKEY is not set or is empty!"
+            exit 1
+          else
+            echo "OPENAI_APIKEY length: ${#OPENAI_APIKEY}"
+          fi
+        env:
+          OPENAI_APIKEY: ${{ secrets.OPENAI_APIKEY }}
 
       - name: Clear and Set Permissions for Temp Folder
         run: |
@@ -45,20 +50,20 @@ jobs:
           pip install pytest pytest-mock pytest-cov
 
       - name: Run integration tests (with mock DB)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           cd backend
           pytest tests/integration --cov=src --cov-report=xml --disable-warnings
-
-      - name: Run unit tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Run unit tests
         run: |
           cd backend
           pytest tests/uni --cov=src --cov-report=xml --disable-warnings
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
 
       - name: Upload coverage report
