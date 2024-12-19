@@ -6,9 +6,6 @@ import os
 class NewsSettings(BaseSettings):
     OPENAI_APIKEY: str = os.getenv("OPENAI_APIKEY")
     ANTHROPIC_APIKEY: str = os.getenv("ANTHROPIC_APIKEY")
-    class Config:
-        env_file = Path(__file__).parent.parent / ".env"
-        env_file_encoding = "utf-8"
 @lru_cache
 def get_NewsSettings() -> NewsSettings:
     return NewsSettings()
