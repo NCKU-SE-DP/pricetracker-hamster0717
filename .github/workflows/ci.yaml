@@ -9,6 +9,7 @@ on:
       - 'refactor/crawler-oop-implementation'
       - 'refactor/llm_client'
       - 'refactor/error_handling'
+      - 'refactor/codereview'
   pull_request:
     branches:
       - 'main'
