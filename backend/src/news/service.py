@@ -81,17 +81,17 @@ def get_new_info(is_initial=False):
             
             add_news_article(detailed_news)
 
-def get_article_upvote_details(article_id, uid, database):
+def get_article_upvote_details(article_id, user_id, database):
     counter = (
         database.query(user_news_association_table)
         .filter_by(news_articles_id=article_id)
         .count()
     )
     voted = False
-    if uid:
+    if user_id:
         voted = (
                 database.query(user_news_association_table)
-                .filter_by(news_articles_id=article_id, user_id=uid)
+                .filter_by(news_articles_id=article_id, user_id=user_id)
                 .first()
                 is not None
         )
